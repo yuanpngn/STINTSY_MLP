@@ -7,49 +7,64 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import learning_curve
 
 
+def tune_random_forest(X_train, y_train, X_test, y_test, verbose=2):
+    # Validation checks
+    if X_train is None or y_train is None or X_test is None or y_test is None:
+        print("Training or test data is None.")
+        return None
+    if len(X_train) == 0 or len(y_train) == 0 or len(X_test) == 0 or len(y_test) == 0:
+        print("Training or test data is empty.")
+        return None
+    if X_train.shape[0] != y_train.shape[0]:
+        print("Mismatch between number of samples in X_train and y_train.")
+        return None
+    if X_train.shape[1] != X_test.shape[1]:
+        print("Mismatch between number of features in X_train and X_test.")
+        return None
 
-
-def tune_random_forest(X_train, y_train, X_test, y_test):
-    # Define the parameter grid for hyperparameter tuning
-    
+    # Define the parameter grid
     param_grid = {
-        'n_estimators': [100, 200],               # Limit to fewer trees
-        'max_depth': [3, 5],                       # Keep shallow trees for faster fitting
-        'min_samples_split': [2, 5],               # Only test a few values for splitting
-        'min_samples_leaf': [1, 2],                # Limit leaf size
-        'bootstrap': [True]                        # Use bootstrap only (no need to test False)
+        'n_estimators': [100, 200],
+        'max_depth': [3, 5],
+        'min_samples_split': [2, 5],
+        'min_samples_leaf': [1, 2],
+        'bootstrap': [True]
     }
 
     # Initialize the RandomForestRegressor
     rf_regressor = RandomForestRegressor(random_state=42)
 
-    # Initialize the GridSearchCV with the RandomForestRegressor
-    grid_search = GridSearchCV(estimator=rf_regressor, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
+    # Initialize the GridSearchCV
+    grid_search = GridSearchCV(
+        estimator=rf_regressor,
+        param_grid=param_grid,
+        cv=5,
+        n_jobs=-1,
+        verbose=verbose
+    )
 
     try:
-        # Fit the GridSearchCV to the training data
+        # Fit GridSearchCV
         grid_search.fit(X_train, y_train)
 
-        # Debug prints to check what's happening
         print("Best Parameters:", grid_search.best_params_)
-        print("Best Score:", grid_search.best_score_)
+        print("Best Score (CV):", grid_search.best_score_)
 
+        # Retrieve the best model
         if grid_search.best_estimator_:
             best_rf_regressor = grid_search.best_estimator_
             print(f"Best Estimator: {best_rf_regressor}")
-            
-            # Use the best estimator to make predictions on the test data
+
+            # Test set evaluation
             y_pred_best = best_rf_regressor.predict(X_test)
-            
-            # Evaluate the best model on the test data
             test_mse_best = mean_squared_error(y_test, y_pred_best)
             test_rmse_best = np.sqrt(test_mse_best)
             test_r2_best = r2_score(y_test, y_pred_best)
-            
+
             print(f"Test MSE (Best Model): {test_mse_best}")
             print(f"Test RMSE (Best Model): {test_rmse_best}")
             print(f"Test R² (Best Model): {test_r2_best}")
-            
+
             return best_rf_regressor
         else:
             print("No valid model found after GridSearchCV.")
