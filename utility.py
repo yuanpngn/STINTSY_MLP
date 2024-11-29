@@ -45,3 +45,21 @@ def poly_feature_transform(X, poly_order=1):
     ones_column = np.ones((f_transform.shape[0], 1))
     f_transform = np.column_stack((f_transform, ones_column))
     return f_transform
+
+
+
+def poly_feature_transform_keep_lower_order(X, order=1):
+     # Start with the original features (order 1)
+    f_transform = X
+    
+    # Generate higher-order features (without interactions)
+    for order in range(2, order + 1):
+        for feature in range(X.shape[1]):
+            transformed_feature = X[:, feature] ** order
+            f_transform = np.column_stack((f_transform, transformed_feature))
+    
+    # Add bias term (column of ones)
+    ones_column = np.ones((f_transform.shape[0], 1))
+    f_transform = np.column_stack((f_transform, ones_column))
+    
+    return f_transform
