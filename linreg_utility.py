@@ -22,7 +22,6 @@ def compute_RMSE(y_true, y_pred):
 
     return rmse
 
-
 def poly_feature_transform(X, poly_order=1):
     """Transforms the input data X to match the specified polynomial order.
 
@@ -45,3 +44,5 @@ def poly_feature_transform(X, poly_order=1):
     ones_column = np.ones((f_transform.shape[0], 1))
     f_transform = np.column_stack((f_transform, ones_column))
     return f_transform
+
+
